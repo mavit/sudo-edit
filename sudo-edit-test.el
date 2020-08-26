@@ -41,6 +41,11 @@
   ;; local files
   (should (equal (sudo-edit-filename "/path/to/example.txt" "root")
                  "/sudo:root@localhost:/path/to/example.txt"))
+
+  ;; alternative method
+  (should (equal (sudo-edit-filename "/path/to/example.txt" "root" "sudoedit")
+                 "/sudoedit:root@localhost:/path/to/example.txt"))
+
   ;; remote files
   (should (equal (sudo-edit-filename "/ssh:remotehost:/path/to/example.txt" "root")
                  "/ssh:remotehost|sudo:root@remotehost:/path/to/example.txt"))

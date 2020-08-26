@@ -99,6 +99,14 @@ attention to case differences."
   :type 'string
   :group 'sudo-edit)
 
+(defcustom sudo-edit-default-tramp-method "sudo"
+  "Default TRAMP method to edit a file with `sudo-edit'."
+  :type '(choice (const "sudo")
+                 (const "sudoedit"))
+  :package-version '(sudo-edit . "0.2.0")
+  :risky t
+  :group 'sudo-edit)
+
 (defface sudo-edit-header-face
   '((t (:foreground "white" :background "red3")))
   "*Face use to display header-lines for files opened as root."
@@ -158,8 +166,11 @@ This function is suitable to add to `find-file-hook' and `dired-file-hook'."
              (string-equal (sudo-edit-tramp-get-parameter vec 'tramp-login-program) "ssh")))
       (tramp-gvfs-file-name-p filename)))
 
-(defun sudo-edit-filename (filename user)
-  "Return a tramp edit name for a FILENAME as USER."
+(defun sudo-edit-filename (filename user &optional sudo-method)
+  "Return a tramp edit name for a FILENAME as USER.
+Optionally specify a TRAMP SUDO-METHOD."
+  (unless (stringp sudo-method)
+    (setq sudo-method sudo-edit-default-tramp-method))
   (if (file-remote-p filename)
       (let* ((vec (tramp-dissect-file-name filename))
              ;; XXX: Change to ssh method on out-of-band ssh based methods
@@ -180,8 +191,8 @@ This function is suitable to add to `find-file-hook' and `dired-file-hook'."
         (if (and (string= user (tramp-file-name-user vec))
                  (string-match tramp-local-host-regexp (tramp-file-name-host vec)))
             (tramp-file-name-localname vec)
-          (sudo-edit-make-tramp-file-name "sudo" user (tramp-file-name-domain vec) (tramp-file-name-host vec) (tramp-file-name-port vec) (tramp-file-name-localname vec) hop)))
-    (sudo-edit-make-tramp-file-name "sudo" user nil "localhost" nil (expand-file-name filename))))
+          (sudo-edit-make-tramp-file-name sudo-method user (tramp-file-name-domain vec) (tramp-file-name-host vec) (tramp-file-name-port vec) (tramp-file-name-localname vec) hop)))
+    (sudo-edit-make-tramp-file-name sudo-method user nil "localhost" nil (expand-file-name filename))))
 
 ;;;###autoload
 (defun sudo-edit (&optional arg)
